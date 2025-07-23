@@ -1,7 +1,13 @@
+{ inputs, lib, ... }:
 {
-  flake.overlays.default = _final: prev:
-    prev.lib.packagesFromDirectoryRecursive {
-      inherit (prev) callPackage;
-      directory = ./.;
+  imports = [ inputs.flake-parts.flakeModules.easyOverlay ];
+  perSystem =
+    { pkgs, config, ... }:
+    {
+      packages = lib.packagesFromDirectoryRecursive {
+        inherit (pkgs) callPackage;
+        directory = ./.;
+      };
+      overlayAttrs = config.packages;
     };
 }

@@ -5,9 +5,13 @@ let
 in
 stdenv.mkDerivation {
   pname = "codelldb";
-  inherit (codelldb_package) version meta src;
+  inherit (codelldb_package) version meta;
+  src = ./.;
 
-  nativeBuildInputs = [ pkgs.autoPatchelfHook ];
+  nativeBuildInputs = with pkgs; [
+    makeWrapper
+    autoFixElfFiles
+  ];
 
   dontUnpack = true;
   dontBuild = true;
@@ -16,10 +20,13 @@ stdenv.mkDerivation {
   installPhase = ''
     runHook preInstall
 
-    mkdir -p $out/bin $out/bin
-    cp -r ${codelldb_path}/adapters/ $out/bin
-    cp -r ${codelldb_path}/lldb/lib $out/lib
-    chmod +x $out/bin/codelldb
+    mkdir -p $out/bin $out/lib
+    cp -r ${codelldb_path}/adapter/* $out/bin/
+    cp -r ${codelldb_path}/lldb/bin/* $out/bin/
+    cp -r ${codelldb_path}/lldb/lib/* $out/lib/
+
+    chmod +x $out/bin/*
+    wrapProgram $out/bin/codelldb --set LD_LIBRARY_PATH $out/lib
 
     runHook postInstall
   '';
